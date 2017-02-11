@@ -1,6 +1,6 @@
 # PaperCall.io API to XLS
 
-
+This script calls the PaperCall.io API and pulls submissions into a spreadsheet for each state (submitted, accepted, rejected, waitlist).
 
 # Installation
 
