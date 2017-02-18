@@ -1,9 +1,6 @@
 from requests import get
 import xlwt
 
-# API Key
-API_KEY = ''
-
 # Possible proposal states
 PROPOSAL_STATES = ('submitted', 'accepted', 'rejected', 'waitlist')
 
@@ -12,6 +9,15 @@ HEADER_STYLE = xlwt.easyxf(
     'font: name Verdana, color-index blue, bold on',
     num_format_str='#,##0.00'
 )
+
+# Get the user's API key
+print('Your DjangoCon PaperCall API Key can be found here: https://www.papercall.io/events/316/apidocs')
+API_KEY = input('Please enter your PaperCall event API Key: ')
+if len(API_KEY) != 32:
+    raise ValueError('Error: API Key must be 32 characters long.')
+
+# Get destination file name
+DEST_FILE = input('Filename to write [djangoconus.xls]: ') or 'djangoconus.xls'
 
 # Create the Spreadsheet Workbook
 wb = xlwt.Workbook()
@@ -45,4 +51,5 @@ for ps in PROPOSAL_STATES:
 
         num_row += 1
 
-wb.save('djangoconus.xls')
+wb.save(DEST_FILE)
+print('')
