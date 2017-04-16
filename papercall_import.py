@@ -29,7 +29,7 @@ def get_format():
     """
     print('Which format would you like to output?')
     print('1: Excel')
-    print('2: Markdown')
+    print('2: YAML for Jekyll')
     file_format = input('Please enter your your output format (1 or 2): ')
     if file_format not in ('1', '2'):
         raise ValueError('Error: Output format must be "1" or "2".')
@@ -37,11 +37,11 @@ def get_format():
     return file_format
 
 
-def get_xls_file():
-    # Get XLSination file name
-    xls_file = input('Filename to write [djangoconus.xls]: ') or 'djangoconus.xls'
+def get_filename(input_text, default_filename):
+    # Get file name from user
+    output_filename = input(input_text) or default_filename
 
-    return xls_file
+    return output_filename
 
 
 def create_excel(api_key, xls_file):
@@ -80,15 +80,20 @@ def create_excel(api_key, xls_file):
     wb.save(xls_file)
 
 
+def create_yaml(api_key, yaml_dir):
+    print(yaml_dir)
+
+
 def main():
     api_key = get_api_key()
     file_format = get_format()
 
     if file_format == "1":
-        xls_file = get_xls_file()
+        xls_file = get_filename('Filename to write [djangoconus.xls]: ', 'djangoconus.xls')
         create_excel(api_key, xls_file)
     elif file_format == 2:
-        pass
+        yaml_dir = get_filename('Directory to write to [yaml/]: ', 'yaml/')
+        create_yaml(api_key, yaml_dir)
 
 
 if __name__ == "__main__":

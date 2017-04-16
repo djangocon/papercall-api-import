@@ -1,6 +1,9 @@
 # PaperCall.io API to XLS
 
-This script calls the PaperCall.io API and pulls submissions into a spreadsheet for each state (submitted, accepted, rejected, waitlist).
+This script calls the PaperCall.io API and pulls submissions into a format chosen by the user. The user can choose:
+
+- A spreadsheet for each state (submitted, accepted, rejected, waitlist).
+- A directory of YAML files with all four states and talks within.
 
 # Installation
 
@@ -18,4 +21,6 @@ https://www.papercall.io/events/[event_id]/apidocs
 
 Then run the command:
 
-    python apitoxls.py
+    python papercall_import.py
+
+...and follow the input prompts!
