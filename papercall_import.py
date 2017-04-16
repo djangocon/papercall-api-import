@@ -1,11 +1,13 @@
+from os import makedirs
 from requests import get
-import xlwt
+from slugify import slugify
+from xlwt import easyxf, Workbook
 
 # Possible proposal states
 PROPOSAL_STATES = ('submitted', 'accepted', 'rejected', 'waitlist')
 
 # Style for the Spreadsheet headers
-HEADER_STYLE = xlwt.easyxf(
+HEADER_STYLE = easyxf(
     'font: name Verdana, color-index blue, bold on',
     num_format_str='#,##0.00'
 )
@@ -29,7 +31,7 @@ def get_format():
     """
     print('Which format would you like to output?')
     print('1: Excel')
-    print('2: YAML for Jekyll')
+    print('2: YAML/Markdown for Jekyll')
     file_format = input('Please enter your your output format (1 or 2): ')
     if file_format not in ('1', '2'):
         raise ValueError('Error: Output format must be "1" or "2".')
@@ -46,7 +48,7 @@ def get_filename(input_text, default_filename):
 
 def create_excel(api_key, xls_file):
     # Create the Spreadsheet Workbook
-    wb = xlwt.Workbook()
+    wb = Workbook()
 
     for ps in PROPOSAL_STATES:
         # Reset row counter for the new sheet
@@ -62,7 +64,7 @@ def create_excel(api_key, xls_file):
         ws.write(0, 4, 'Rating', HEADER_STYLE)
 
         r = get(
-            'https://www.papercall.io/api/v1/submissions?_token={0}&state={1}'.format(
+            'https://www.papercall.io/api/v1/submissions?_token={0}&state={1}&per_page=1000'.format(
                 api_key,
                 ps,
             )
@@ -81,7 +83,43 @@ def create_excel(api_key, xls_file):
 
 
 def create_yaml(api_key, yaml_dir):
-    print(yaml_dir)
+    for ps in PROPOSAL_STATES:
+        # Create the directories, if they don't exist.
+        makedirs(
+            '{}/{}'.format(
+                yaml_dir,
+                ps,
+            ), exist_ok=True,
+        )
+
+        r = get(
+            'https://www.papercall.io/api/v1/submissions?_token={0}&state={1}&per_page=1000'.format(
+                api_key,
+                ps,
+            )
+        )
+
+        from pprint import pprint, pformat
+        for proposal in r.json():
+            talk_format = None
+            if proposal['talk']['talk_format'][0:4].lower() == "talk":
+                talk_format = "talk"
+            elif proposal['talk']['talk_format'][0:4].lower() == "tuto":
+                talk_format = "tutorial"
+
+            if talk_format:
+                with open(
+                    '{}/{}/{}-{}.md'.format(
+                        yaml_dir,
+                        ps,
+                        talk_format,
+                        slugify(proposal['talk']['title']),
+                    ),
+                    'w'
+                ) as file_to_write:
+                    file_to_write.write(pformat(proposal))
+
+                pprint(proposal)
 
 
 def main():
@@ -91,8 +129,8 @@ def main():
     if file_format == "1":
         xls_file = get_filename('Filename to write [djangoconus.xls]: ', 'djangoconus.xls')
         create_excel(api_key, xls_file)
-    elif file_format == 2:
-        yaml_dir = get_filename('Directory to write to [yaml/]: ', 'yaml/')
+    elif file_format == "2":
+        yaml_dir = get_filename('Directory to write to [yaml]: ', 'yaml')
         create_yaml(api_key, yaml_dir)
 
 

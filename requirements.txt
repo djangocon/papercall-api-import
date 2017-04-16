@@ -1,3 +1,4 @@
 python-frontmatter==0.4.2
+python-slugify==1.2.4
 requests==2.13.0
 xlwt==1.2.0
