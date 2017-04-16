@@ -52,4 +52,4 @@ for ps in PROPOSAL_STATES:
         num_row += 1
 
 wb.save(DEST_FILE)
-print('')
+print('Complete!')
