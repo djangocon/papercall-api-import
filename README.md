@@ -1,4 +1,4 @@
-# PaperCall.io API to XLS
+# PaperCall.io API Import
 
 This script calls the PaperCall.io API and pulls submissions into a format chosen by the user. The user can choose:
 
