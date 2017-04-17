@@ -110,10 +110,14 @@ def create_yaml(api_key, yaml_dir):
                 talk_format = "tutorial"
 
             if talk_format:
+                talk_title_slug = slugify(proposal['talk']['title'])
                 post = frontmatter.loads(proposal['talk']['description'])
                 post['category'] = talk_format
                 post['title'] = proposal['talk']['title']
-                post['permalink'] = ''  # TODO: fill-in to be SEO friendly
+                post['permalink'] = '/{}/{}/'.format(
+                    talk_format,
+                    talk_title_slug,
+                )
                 post['layout'] = 'session-details'
                 post['accepted'] = True if ps == 'accepted' else False
                 post['published'] = True
@@ -147,7 +151,7 @@ def create_yaml(api_key, yaml_dir):
                         yaml_dir,
                         ps,
                         talk_format,
-                        slugify(proposal['talk']['title']),
+                        talk_title_slug,
                     ),
                     'wb'
                 ) as file_to_write:
@@ -157,7 +161,10 @@ def create_yaml(api_key, yaml_dir):
 
 
 def main():
-    api_key = env('PAPERCALL_API_KEY') or get_api_key()
+    try:
+        api_key = env('PAPERCALL_API_KEY')
+    except:
+        api_key = get_api_key()
     file_format = get_format()
 
     if file_format == "1":
