@@ -108,6 +108,35 @@ def create_yaml(api_key, yaml_dir):
                 talk_format = "tutorial"
 
             if talk_format:
+                file_contents = """---
+accepted: {0}
+category: {1}
+date: 2016-07-18 09:00
+layout: session-details
+permalink: ''
+presenters: ''
+photo_url: ''
+published: true
+sitemap: false
+room: ''
+summary: ''
+title: {2}
+track: ''
+video_url: ''
+slides_url: ''
+bio: |
+    Placeholder bio.
+twitter: 
+github: 
+---
+{3}
+                """.format(
+                    str(ps == 'accepted').lower(),
+                    talk_format,
+                    proposal['talk']['title'],
+                    proposal['talk']['description'],
+                )
+
                 with open(
                     '{}/{}/{}-{}.md'.format(
                         yaml_dir,
@@ -117,7 +146,7 @@ def create_yaml(api_key, yaml_dir):
                     ),
                     'w'
                 ) as file_to_write:
-                    file_to_write.write(pformat(proposal))
+                    file_to_write.write(file_contents)
 
                 pprint(proposal)
 
