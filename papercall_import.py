@@ -1,3 +1,6 @@
+import frontmatter
+
+from envparse import env
 from os import makedirs
 from requests import get
 from slugify import slugify
@@ -33,7 +36,7 @@ def get_format():
     print('1: Excel')
     print('2: YAML/Markdown for Jekyll')
     file_format = input('Please enter your your output format (1 or 2): ')
-    if file_format not in ('1', '2'):
+    if str(file_format) not in ('1', '2'):
         raise ValueError('Error: Output format must be "1" or "2".')
 
     return file_format
@@ -99,7 +102,6 @@ def create_yaml(api_key, yaml_dir):
             )
         )
 
-        from pprint import pprint, pformat
         for proposal in r.json():
             talk_format = None
             if proposal['talk']['talk_format'][0:4].lower() == "talk":
@@ -108,34 +110,37 @@ def create_yaml(api_key, yaml_dir):
                 talk_format = "tutorial"
 
             if talk_format:
-                file_contents = """---
-accepted: {0}
-category: {1}
-date: 2016-07-18 09:00
-layout: session-details
-permalink: ''
-presenters: ''
-photo_url: ''
-published: true
-sitemap: false
-room: ''
-summary: ''
-title: {2}
-track: ''
-video_url: ''
-slides_url: ''
-bio: |
-    Placeholder bio.
-twitter: 
-github: 
----
-{3}
-                """.format(
-                    str(ps == 'accepted').lower(),
-                    talk_format,
-                    proposal['talk']['title'],
-                    proposal['talk']['description'],
-                )
+                post = frontmatter.loads(proposal['talk']['description'])
+                post['category'] = talk_format
+                post['title'] = proposal['talk']['title']
+                post['permalink'] = ''  # TODO: fill-in to be SEO friendly
+                post['layout'] = 'session-details'
+                post['accepted'] = True if ps == 'accepted' else False
+                post['published'] = True
+                post['sitemap'] = True
+
+                # TODO: Scheduling info...
+                post['date'] = '2016-07-18 09:00'
+                post['room'] = ''
+                post['track'] = ''
+
+                # TODO: Determine if we still need summary (I don't think we do)
+                post['summary'] = ''
+
+                # todo: refactor template layout to support multiple authors
+                post['presenters'] = [
+                    {
+                        'name': '',
+                        'bio': 'Placeholder bio.',
+                        'photo_url': '',
+                        'github': '',
+                        'twitter': '',
+                    },
+                ]
+
+                # post conference info
+                post['video_url'] = ''
+                post['slides_url'] = ''
 
                 with open(
                     '{}/{}/{}-{}.md'.format(
@@ -144,21 +149,21 @@ github:
                         talk_format,
                         slugify(proposal['talk']['title']),
                     ),
-                    'w'
+                    'wb'
                 ) as file_to_write:
-                    file_to_write.write(file_contents)
+                    frontmatter.dump(post, file_to_write)
 
-                pprint(proposal)
+                print(frontmatter.dumps(post))
 
 
 def main():
-    api_key = get_api_key()
+    api_key = env('PAPERCALL_API_KEY') or get_api_key()
     file_format = get_format()
 
-    if file_format == "1":
+    if str(file_format) == "1":
         xls_file = get_filename('Filename to write [djangoconus.xls]: ', 'djangoconus.xls')
         create_excel(api_key, xls_file)
-    elif file_format == "2":
+    elif str(file_format) == "2":
         yaml_dir = get_filename('Directory to write to [yaml]: ', 'yaml')
         create_yaml(api_key, yaml_dir)
 
