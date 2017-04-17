@@ -36,7 +36,7 @@ def get_format():
     print('1: Excel')
     print('2: YAML/Markdown for Jekyll')
     file_format = input('Please enter your your output format (1 or 2): ')
-    if str(file_format) not in ('1', '2'):
+    if file_format not in ('1', '2'):
         raise ValueError('Error: Output format must be "1" or "2".')
 
     return file_format
@@ -160,10 +160,10 @@ def main():
     api_key = env('PAPERCALL_API_KEY') or get_api_key()
     file_format = get_format()
 
-    if str(file_format) == "1":
+    if file_format == "1":
         xls_file = get_filename('Filename to write [djangoconus.xls]: ', 'djangoconus.xls')
         create_excel(api_key, xls_file)
-    elif str(file_format) == "2":
+    elif file_format == "2":
         yaml_dir = get_filename('Directory to write to [yaml]: ', 'yaml')
         create_yaml(api_key, yaml_dir)
 
