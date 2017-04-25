@@ -65,9 +65,11 @@ def create_excel(api_key, xls_file):
         ws.write(0, 2, 'Format', HEADER_STYLE)
         ws.write(0, 3, 'Audience', HEADER_STYLE)
         ws.write(0, 4, 'Rating', HEADER_STYLE)
+        ws.write(0, 5, 'Name', HEADER_STYLE)
+        ws.write(0, 6, 'Bio', HEADER_STYLE)
 
-        for x in range(5, 35):
-            ws.write(0, x, 'Feedback {}'.format(x - 4), HEADER_STYLE)
+        for x in range(7, 35):
+            ws.write(0, x, 'Comments / Feedback {}'.format(x - 6), HEADER_STYLE)
 
         r = get(
             'https://www.papercall.io/api/v1/submissions?_token={0}&state={1}&per_page=1000'.format(
@@ -82,8 +84,32 @@ def create_excel(api_key, xls_file):
             ws.write(num_row, 2, proposal['talk']['talk_format'])
             ws.write(num_row, 3, proposal['talk']['audience_level'])
             ws.write(num_row, 4, proposal['rating'])
+            ws.write(num_row, 5, proposal['profile']['name'])
+            ws.write(num_row, 6, proposal['profile']['bio'])
 
-            num_col = 5;
+            # Start at column 7 for comments and feedback
+            num_col = 7;
+
+            # Only include ratings comments if they've been entered
+            c = get(
+                'https://www.papercall.io/api/v1/submissions/{}/ratings?_token={}'.format(
+                    proposal['id'],
+                    api_key,
+                )
+            )
+            for ratings_comment in c.json():
+                if len(ratings_comment['comments']):
+                    ws.write(
+                        num_row,
+                        num_col,
+                        '(Comment from {}) {}'.format(
+                            ratings_comment['user']['email'],
+                            ratings_comment['comments'],
+                        ),
+                    )
+                    num_col += 1
+
+            # Loop through all of the submitter / reviewer feedback and include after comments
             f = get(
                 'https://www.papercall.io/api/v1/submissions/{}/feedback?_token={}'.format(
                     proposal['id'],
@@ -94,12 +120,13 @@ def create_excel(api_key, xls_file):
                 ws.write(
                     num_row,
                     num_col,
-                    '({}) {}'.format(
+                    '(Feedback from {}) {}'.format(
                         feedback['user']['email'],
                         feedback['body'],
                     ),
                 )
                 num_col += 1
+
 
             num_row += 1
 
