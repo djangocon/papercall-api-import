@@ -66,6 +66,9 @@ def create_excel(api_key, xls_file):
         ws.write(0, 3, 'Audience', HEADER_STYLE)
         ws.write(0, 4, 'Rating', HEADER_STYLE)
 
+        for x in range(5, 35):
+            ws.write(0, x, 'Feedback {}'.format(x - 4), HEADER_STYLE)
+
         r = get(
             'https://www.papercall.io/api/v1/submissions?_token={0}&state={1}&per_page=1000'.format(
                 api_key,
@@ -79,6 +82,24 @@ def create_excel(api_key, xls_file):
             ws.write(num_row, 2, proposal['talk']['talk_format'])
             ws.write(num_row, 3, proposal['talk']['audience_level'])
             ws.write(num_row, 4, proposal['rating'])
+
+            num_col = 5;
+            f = get(
+                'https://www.papercall.io/api/v1/submissions/{}/feedback?_token={}'.format(
+                    proposal['id'],
+                    api_key,
+                )
+            )
+            for feedback in f.json():
+                ws.write(
+                    num_row,
+                    num_col,
+                    '({}) {}'.format(
+                        feedback['user']['email'],
+                        feedback['body'],
+                    ),
+                )
+                num_col += 1
 
             num_row += 1
 
