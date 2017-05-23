@@ -160,6 +160,7 @@ def create_yaml(api_key, yaml_dir):
                 talk_title_slug = slugify(proposal['talk']['title'])
 
                 post = frontmatter.loads(proposal['talk']['description'])
+                post['abstract'] = proposal['talk']['abstract']
                 post['category'] = talk_format
                 post['title'] = proposal['talk']['title']
                 post['permalink'] = '/{}/{}/'.format(
