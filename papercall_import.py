@@ -53,13 +53,13 @@ def create_excel(api_key, xls_file):
     # Create the Spreadsheet Workbook
     wb = Workbook()
 
-    for ps in PROPOSAL_STATES:
+    for proposal_state in PROPOSAL_STATES:
         # Reset row counter for the new sheet
         # Row 0 is reserved for the header
         num_row = 1
 
         # Create the new sheet and header row for each talk state
-        ws = wb.add_sheet(ps.upper())
+        ws = wb.add_sheet(proposal_state.upper())
         ws.write(0, 0, 'ID', HEADER_STYLE)
         ws.write(0, 1, 'Title', HEADER_STYLE)
         ws.write(0, 2, 'Format', HEADER_STYLE)
@@ -74,7 +74,7 @@ def create_excel(api_key, xls_file):
         r = get(
             'https://www.papercall.io/api/v1/submissions?_token={0}&state={1}&per_page=1000'.format(
                 api_key,
-                ps,
+                proposal_state,
             )
         )
 
@@ -88,7 +88,7 @@ def create_excel(api_key, xls_file):
             ws.write(num_row, 6, proposal['profile']['bio'])
 
             # Start at column 7 for comments and feedback
-            num_col = 7;
+            num_col = 7
 
             # Only include ratings comments if they've been entered
             c = get(
@@ -127,26 +127,25 @@ def create_excel(api_key, xls_file):
                 )
                 num_col += 1
 
-
             num_row += 1
 
     wb.save(xls_file)
 
 
 def create_yaml(api_key, yaml_dir):
-    for ps in PROPOSAL_STATES:
+    for proposal_state in PROPOSAL_STATES:
         # Create the directories, if they don't exist.
         makedirs(
             '{}/{}'.format(
                 yaml_dir,
-                ps,
+                proposal_state,
             ), exist_ok=True,
         )
 
         r = get(
             'https://www.papercall.io/api/v1/submissions?_token={0}&state={1}&per_page=1000'.format(
                 api_key,
-                ps,
+                proposal_state,
             )
         )
 
@@ -159,7 +158,9 @@ def create_yaml(api_key, yaml_dir):
 
             if talk_format:
                 talk_title_slug = slugify(proposal['talk']['title'])
+
                 post = frontmatter.loads(proposal['talk']['description'])
+                post['abstract'] = proposal['talk']['abstract']
                 post['category'] = talk_format
                 post['title'] = proposal['talk']['title']
                 post['permalink'] = '/{}/{}/'.format(
@@ -167,7 +168,7 @@ def create_yaml(api_key, yaml_dir):
                     talk_title_slug,
                 )
                 post['layout'] = 'session-details'
-                post['accepted'] = True if ps == 'accepted' else False
+                post['accepted'] = True if proposal_state == 'accepted' else False
                 post['published'] = True
                 post['sitemap'] = True
 
@@ -197,7 +198,7 @@ def create_yaml(api_key, yaml_dir):
                 with open(
                     '{}/{}/{}-{}.md'.format(
                         yaml_dir,
-                        ps,
+                        proposal_state,
                         talk_format,
                         talk_title_slug,
                     ),
