@@ -168,7 +168,7 @@ def create_yaml(api_key, yaml_dir):
                     talk_title_slug,
                 )
                 post['layout'] = 'session-details'
-                post['accepted'] = True if ps == 'accepted' else False
+                post['accepted'] = True if proposal_state == 'accepted' else False
                 post['published'] = True
                 post['sitemap'] = True
 
