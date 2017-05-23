@@ -183,11 +183,13 @@ def create_yaml(api_key, yaml_dir):
                 # todo: refactor template layout to support multiple authors
                 post['presenters'] = [
                     {
-                        'name': '',
-                        'bio': 'Placeholder bio.',
+                        'name': proposal['profile']['name'],
+                        'bio': proposal['profile']['bio'],
+                        'company': proposal['profile']['company'],
                         'photo_url': '',
                         'github': '',
-                        'twitter': '',
+                        'twitter': proposal['profile']['twitter'],
+                        'website': proposal['profile']['url'],
                     },
                 ]
 
