@@ -88,7 +88,7 @@ def create_excel(api_key, xls_file):
             ws.write(num_row, 6, proposal['profile']['bio'])
 
             # Start at column 7 for comments and feedback
-            num_col = 7;
+            num_col = 7
 
             # Only include ratings comments if they've been entered
             c = get(
@@ -127,7 +127,6 @@ def create_excel(api_key, xls_file):
                 )
                 num_col += 1
 
-
             num_row += 1
 
     wb.save(xls_file)
@@ -159,6 +158,7 @@ def create_yaml(api_key, yaml_dir):
 
             if talk_format:
                 talk_title_slug = slugify(proposal['talk']['title'])
+
                 post = frontmatter.loads(proposal['talk']['description'])
                 post['category'] = talk_format
                 post['title'] = proposal['talk']['title']
