@@ -163,6 +163,7 @@ def create_yaml(api_key, yaml_dir):
                 post['abstract'] = proposal['talk']['abstract']
                 post['category'] = talk_format
                 post['title'] = proposal['talk']['title']
+                post['difficulty'] = proposal['talk']['audience_level']
                 post['permalink'] = '/{}/{}/'.format(
                     talk_format,
                     talk_title_slug,
