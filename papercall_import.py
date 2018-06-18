@@ -6,8 +6,8 @@ from requests import get
 from slugify import slugify
 from xlwt import easyxf, Workbook
 
-# Possible proposal states
-PROPOSAL_STATES = ('submitted', 'accepted', 'rejected', 'waitlist')
+# Possible submission states
+SUBMISSION_STATES = ('submitted', 'accepted', 'rejected', 'waitlist')
 
 # Style for the Spreadsheet headers
 HEADER_STYLE = easyxf(
@@ -53,13 +53,13 @@ def create_excel(api_key, xls_file):
     # Create the Spreadsheet Workbook
     wb = Workbook()
 
-    for proposal_state in PROPOSAL_STATES:
+    for submission_state in SUBMISSION_STATES:
         # Reset row counter for the new sheet
         # Row 0 is reserved for the header
         num_row = 1
 
         # Create the new sheet and header row for each talk state
-        ws = wb.add_sheet(proposal_state.upper())
+        ws = wb.add_sheet(submission_state.upper())
         ws.write(0, 0, 'ID', HEADER_STYLE)
         ws.write(0, 1, 'Title', HEADER_STYLE)
         ws.write(0, 2, 'Format', HEADER_STYLE)
@@ -74,18 +74,18 @@ def create_excel(api_key, xls_file):
         r = get(
             'https://www.papercall.io/api/v1/submissions?_token={0}&state={1}&per_page=1000'.format(
                 api_key,
-                proposal_state,
+                submission_state,
             )
         )
 
-        for proposal in r.json():
-            ws.write(num_row, 0, proposal['id'])
-            ws.write(num_row, 1, proposal['talk']['title'])
-            ws.write(num_row, 2, proposal['talk']['talk_format'])
-            ws.write(num_row, 3, proposal['talk']['audience_level'])
-            ws.write(num_row, 4, proposal['rating'])
-            ws.write(num_row, 5, proposal['profile']['name'])
-            ws.write(num_row, 6, proposal['profile']['bio'])
+        for submission in r.json():
+            ws.write(num_row, 0, submission['id'])
+            ws.write(num_row, 1, submission['talk']['title'])
+            ws.write(num_row, 2, submission['talk']['talk_format'])
+            ws.write(num_row, 3, submission['talk']['audience_level'])
+            ws.write(num_row, 4, submission['rating'])
+            ws.write(num_row, 5, submission['profile']['name'])
+            ws.write(num_row, 6, submission['profile']['bio'])
 
             # Start at column 7 for comments and feedback
             num_col = 7
@@ -93,7 +93,7 @@ def create_excel(api_key, xls_file):
             # Only include ratings comments if they've been entered
             c = get(
                 'https://www.papercall.io/api/v1/submissions/{}/ratings?_token={}'.format(
-                    proposal['id'],
+                    submission['id'],
                     api_key,
                 )
             )
@@ -112,7 +112,7 @@ def create_excel(api_key, xls_file):
             # Loop through all of the submitter / reviewer feedback and include after comments
             f = get(
                 'https://www.papercall.io/api/v1/submissions/{}/feedback?_token={}'.format(
-                    proposal['id'],
+                    submission['id'],
                     api_key,
                 )
             )
@@ -133,43 +133,43 @@ def create_excel(api_key, xls_file):
 
 
 def create_yaml(api_key, yaml_dir):
-    for proposal_state in PROPOSAL_STATES:
+    for submission_state in SUBMISSION_STATES:
         # Create the directories, if they don't exist.
         makedirs(
             '{}/{}'.format(
                 yaml_dir,
-                proposal_state,
+                submission_state,
             ), exist_ok=True,
         )
 
         r = get(
             'https://www.papercall.io/api/v1/submissions?_token={0}&state={1}&per_page=1000'.format(
                 api_key,
-                proposal_state,
+                submission_state,
             )
         )
 
-        for proposal in r.json():
+        for submission in r.json():
             talk_format = None
-            if proposal['talk']['talk_format'][0:4].lower() == "talk":
+            if submission['talk']['talk_format'][0:4].lower() == "talk":
                 talk_format = "talk"
-            elif proposal['talk']['talk_format'][0:4].lower() == "tuto":
+            elif submission['talk']['talk_format'][0:4].lower() == "tuto":
                 talk_format = "tutorial"
 
             if talk_format:
-                talk_title_slug = slugify(proposal['talk']['title'])
+                talk_title_slug = slugify(submission['talk']['title'])
 
-                post = frontmatter.loads(proposal['talk']['description'])
-                post['abstract'] = proposal['talk']['abstract']
+                post = frontmatter.loads(submission['talk']['description'])
+                post['abstract'] = submission['talk']['abstract']
                 post['category'] = talk_format
-                post['title'] = proposal['talk']['title']
-                post['difficulty'] = proposal['talk']['audience_level']
+                post['title'] = submission['talk']['title']
+                post['difficulty'] = submission['talk']['audience_level']
                 post['permalink'] = '/{}/{}/'.format(
                     talk_format,
                     talk_title_slug,
                 )
                 post['layout'] = 'session-details'
-                post['accepted'] = True if proposal_state == 'accepted' else False
+                post['accepted'] = True if submission_state == 'accepted' else False
                 post['published'] = True
                 post['sitemap'] = True
 
@@ -184,13 +184,13 @@ def create_yaml(api_key, yaml_dir):
                 # todo: refactor template layout to support multiple authors
                 post['presenters'] = [
                     {
-                        'name': proposal['profile']['name'],
-                        'bio': proposal['profile']['bio'],
-                        'company': proposal['profile']['company'],
+                        'name': submission['profile']['name'],
+                        'bio': submission['profile']['bio'],
+                        'company': submission['profile']['company'],
                         'photo_url': '',
                         'github': '',
-                        'twitter': proposal['profile']['twitter'],
-                        'website': proposal['profile']['url'],
+                        'twitter': submission['profile']['twitter'],
+                        'website': submission['profile']['url'],
                     },
                 ]
 
@@ -201,7 +201,7 @@ def create_yaml(api_key, yaml_dir):
                 with open(
                     '{}/{}/{}-{}.md'.format(
                         yaml_dir,
-                        proposal_state,
+                        submission_state,
                         talk_format,
                         talk_title_slug,
                     ),
