@@ -1,6 +1,6 @@
 import frontmatter
 
-from envparse import env
+from envparse import env, ConfigurationError
 from os import makedirs
 from requests import get
 from slugify import slugify
@@ -43,13 +43,22 @@ def get_format():
 
 
 def get_filename(input_text, default_filename):
-    # Get file name from user
+    """
+    Get file name from user.
+    """
     output_filename = input(input_text) or default_filename
 
     return output_filename
 
 
 def create_excel(api_key, xls_file):
+    """
+    Creates an Excel workbook with a spreadsheet for each status of submission.
+    """
+    total_submissions = 0
+    total_ratings = 0
+    total_feedback = 0
+
     # Create the Spreadsheet Workbook
     wb = Workbook()
 
@@ -66,10 +75,11 @@ def create_excel(api_key, xls_file):
         ws.write(0, 3, 'Audience', HEADER_STYLE)
         ws.write(0, 4, 'Rating', HEADER_STYLE)
         ws.write(0, 5, 'Name', HEADER_STYLE)
-        ws.write(0, 6, 'Bio', HEADER_STYLE)
+        ws.write(0, 6, 'Email', HEADER_STYLE)
+        ws.write(0, 7, 'Bio', HEADER_STYLE)
 
-        for x in range(7, 35):
-            ws.write(0, x, 'Comments / Feedback {}'.format(x - 6), HEADER_STYLE)
+        for x in range(8, 35):
+            ws.write(0, x, 'Comments / Feedback {}'.format(x - 7), HEADER_STYLE)
 
         r = get(
             'https://www.papercall.io/api/v1/submissions?_token={0}&state={1}&per_page=1000'.format(
@@ -79,6 +89,7 @@ def create_excel(api_key, xls_file):
         )
 
         for submission in r.json():
+            total_submissions += 1
             ws.write(num_row, 0, submission['id'])
             ws.write(num_row, 1, submission['talk']['title'])
             ws.write(num_row, 2, submission['talk']['talk_format'])
@@ -87,13 +98,15 @@ def create_excel(api_key, xls_file):
 
             if 'profile' in submission:
                 ws.write(num_row, 5, submission['profile']['name'])
-                ws.write(num_row, 6, submission['profile']['bio'])
+                ws.write(num_row, 6, submission['profile']['email'])
+                ws.write(num_row, 7, submission['profile']['bio'])
             else:
                 ws.write(num_row, 5, 'Not Revealed')
                 ws.write(num_row, 6, 'Not Revealed')
+                ws.write(num_row, 7, 'Not Revealed')
 
-            # Start at column 7 for comments and feedback
-            num_col = 7
+            # Start at column 8 for comments and feedback
+            num_col = 8
 
             # Only include ratings comments if they've been entered
             c = get(
@@ -103,6 +116,8 @@ def create_excel(api_key, xls_file):
                 )
             )
             for ratings_comment in c.json():
+                total_ratings += 1
+
                 if len(ratings_comment['comments']):
                     ws.write(
                         num_row,
@@ -122,6 +137,7 @@ def create_excel(api_key, xls_file):
                 )
             )
             for feedback in f.json():
+                total_feedback += 1
                 ws.write(
                     num_row,
                     num_col,
@@ -135,6 +151,8 @@ def create_excel(api_key, xls_file):
             num_row += 1
 
     wb.save(xls_file)
+
+    return total_submissions, total_ratings, total_feedback
 
 
 def create_yaml(api_key, yaml_dir):
@@ -220,13 +238,25 @@ def create_yaml(api_key, yaml_dir):
 def main():
     try:
         api_key = env('PAPERCALL_API_KEY')
-    except:
+    except ConfigurationError:
         api_key = get_api_key()
     file_format = get_format()
 
     if file_format == "1":
         xls_file = get_filename('Filename to write [djangoconus.xls]: ', 'djangoconus.xls')
-        create_excel(api_key, xls_file)
+        total_submissions, total_ratings, total_feedback = create_excel(api_key, xls_file)
+
+        print(
+            """
+    Total Submissions: {total_submissions}
+    Total Ratings: {total_ratings}
+    Total Feedback: {total_feedback}
+    """.format(
+                total_submissions=total_submissions,
+                total_ratings=total_ratings,
+                total_feedback=total_feedback,
+            )
+        )
     elif file_format == "2":
         yaml_dir = get_filename('Directory to write to [yaml]: ', 'yaml')
         create_yaml(api_key, yaml_dir)
