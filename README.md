@@ -11,7 +11,7 @@ Use your favorite tool to create a `virtualenv`, then:
 
     git clone https://github.com/djangocon/papercall-api-to-xls.git
     cd papercall-api-to-xls
-    pip install requirements.txt
+    pip install -r requirements.txt
 
 # Running the Script
 
