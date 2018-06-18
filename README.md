@@ -9,8 +9,8 @@ This script calls the PaperCall.io API and pulls submissions into a format chose
 
 Use your favorite tool to create a `virtualenv`, then:
 
-    git clone https://github.com/djangocon/papercall-api-to-xls.git
-    cd papercall-api-to-xls
+    git clone https://github.com/djangocon/papercall-api-import.git
+    cd papercall-api-import
     pip install -r requirements.txt
 
 # Running the Script
