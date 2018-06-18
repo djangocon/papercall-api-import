@@ -84,8 +84,13 @@ def create_excel(api_key, xls_file):
             ws.write(num_row, 2, submission['talk']['talk_format'])
             ws.write(num_row, 3, submission['talk']['audience_level'])
             ws.write(num_row, 4, submission['rating'])
-            ws.write(num_row, 5, submission['profile']['name'])
-            ws.write(num_row, 6, submission['profile']['bio'])
+
+            if 'profile' in submission:
+                ws.write(num_row, 5, submission['profile']['name'])
+                ws.write(num_row, 6, submission['profile']['bio'])
+            else:
+                ws.write(num_row, 5, 'Not Revealed')
+                ws.write(num_row, 6, 'Not Revealed')
 
             # Start at column 7 for comments and feedback
             num_col = 7
