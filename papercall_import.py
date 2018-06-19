@@ -103,8 +103,8 @@ def create_excel(api_key, xls_file):
             ws.write(num_row, 1, submission['talk']['title'])
             ws.write(num_row, 2, submission['talk']['talk_format'])
             ws.write(num_row, 3, submission['talk']['audience_level'])
-            ws.write(num_row, 4, '{0:.3}'.format(submission['rating']))
-            ws.write(num_row, 5, '{0:.3}'.format(submission['trust']))
+            ws.write(num_row, 4, '{0:.4g}'.format(submission['rating']))
+            ws.write(num_row, 5, '{0:.4g}'.format(submission['trust']))
 
             if 'profile' in submission:
                 ws.write(num_row, 6, submission['profile']['name'])
