@@ -78,7 +78,7 @@ def create_excel(api_key, xls_file):
 
         # Create the new sheet and header row for each talk state
         ws = wb.add_sheet(submission_state.upper())
-        columns = ['ID', 'Title', 'Format', 'Audience', 'Rating', 'Trust',
+        columns = ['Link', 'Title', 'Format', 'Audience', 'Rating', 'Trust',
                    'Name', 'Email', 'Bio']
 
         # Write a header row
@@ -99,7 +99,7 @@ def create_excel(api_key, xls_file):
         for submission in r.json():
             total_submissions += 1
 
-            ws.write(num_row, 0, f"<a href='https://www.papercall.io/cfps/{event_id}/submissions/{submission['id']}'>{submission['id']}</a>")
+            ws.write(num_row, 0, f"https://www.papercall.io/cfps/{event_id}/submissions/{submission['id']}")
             ws.write(num_row, 1, submission['talk']['title'])
             ws.write(num_row, 2, submission['talk']['talk_format'])
             ws.write(num_row, 3, submission['talk']['audience_level'])
