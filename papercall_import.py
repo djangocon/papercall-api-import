@@ -66,7 +66,7 @@ def create_excel(api_key, xls_file):
         )
     )
 
-    event_id = r.json()['id']
+    event_id = r.json()['cfp']['id']
 
     # Create the Spreadsheet Workbook
     wb = Workbook()
