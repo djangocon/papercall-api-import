@@ -59,6 +59,15 @@ def create_excel(api_key, xls_file):
     total_ratings = 0
     total_feedback = 0
 
+    # Get the event ID number
+    r = get(
+        'https://www.papercall.io/api/v1/event?_token={0}'.format(
+            api_key,
+        )
+    )
+
+    event_id = r.json()['id']
+
     # Create the Spreadsheet Workbook
     wb = Workbook()
 
@@ -69,17 +78,16 @@ def create_excel(api_key, xls_file):
 
         # Create the new sheet and header row for each talk state
         ws = wb.add_sheet(submission_state.upper())
-        ws.write(0, 0, 'ID', HEADER_STYLE)
-        ws.write(0, 1, 'Title', HEADER_STYLE)
-        ws.write(0, 2, 'Format', HEADER_STYLE)
-        ws.write(0, 3, 'Audience', HEADER_STYLE)
-        ws.write(0, 4, 'Rating', HEADER_STYLE)
-        ws.write(0, 5, 'Name', HEADER_STYLE)
-        ws.write(0, 6, 'Email', HEADER_STYLE)
-        ws.write(0, 7, 'Bio', HEADER_STYLE)
+        columns = ['ID', 'Title', 'Format', 'Audience', 'Rating', 'Trust',
+                   'Name', 'Email', 'Bio']
 
-        for x in range(8, 35):
-            ws.write(0, x, 'Comments / Feedback {}'.format(x - 7), HEADER_STYLE)
+        # Write a header row
+        for col_num, col_name in enumerate(columns):
+            ws.write(0, col_num, col_name, HEADER_STYLE)
+
+        col_num += 1
+        for x in range(col_num, 35):
+            ws.write(0, x, 'Comments / Feedback {}'.format(x - col_num + 1), HEADER_STYLE)
 
         r = get(
             'https://www.papercall.io/api/v1/submissions?_token={0}&state={1}&per_page=1000'.format(
@@ -90,23 +98,24 @@ def create_excel(api_key, xls_file):
 
         for submission in r.json():
             total_submissions += 1
-            ws.write(num_row, 0, submission['id'])
+
+            ws.write(num_row, 0, f"<a href='https://www.papercall.io/cfps/{event_id}/submissions/{submission['id']}'>{submission['id']}</a>")
             ws.write(num_row, 1, submission['talk']['title'])
             ws.write(num_row, 2, submission['talk']['talk_format'])
             ws.write(num_row, 3, submission['talk']['audience_level'])
             ws.write(num_row, 4, submission['rating'])
+            ws.write(num_row, 5, submission['trust'])
 
             if 'profile' in submission:
-                ws.write(num_row, 5, submission['profile']['name'])
-                ws.write(num_row, 6, submission['profile']['email'])
-                ws.write(num_row, 7, submission['profile']['bio'])
+                ws.write(num_row, 6, submission['profile']['name'])
+                ws.write(num_row, 7, submission['profile']['email'])
+                ws.write(num_row, 8, submission['profile']['bio'])
             else:
-                ws.write(num_row, 5, 'Not Revealed')
                 ws.write(num_row, 6, 'Not Revealed')
                 ws.write(num_row, 7, 'Not Revealed')
+                ws.write(num_row, 8, 'Not Revealed')
 
-            # Start at column 8 for comments and feedback
-            num_col = 8
+            col_num_count = col_num
 
             # Only include ratings comments if they've been entered
             c = get(
@@ -121,13 +130,13 @@ def create_excel(api_key, xls_file):
                 if len(ratings_comment['comments']):
                     ws.write(
                         num_row,
-                        num_col,
+                        col_num_count,
                         '(Comment from {}) {}'.format(
                             ratings_comment['user']['email'],
                             ratings_comment['comments'],
                         ),
                     )
-                    num_col += 1
+                    col_num_count += 1
 
             # Loop through all of the submitter / reviewer feedback and include after comments
             f = get(
@@ -140,13 +149,13 @@ def create_excel(api_key, xls_file):
                 total_feedback += 1
                 ws.write(
                     num_row,
-                    num_col,
+                    col_num_count,
                     '(Feedback from {}) {}'.format(
                         feedback['user']['email'],
                         feedback['body'],
                     ),
                 )
-                num_col += 1
+                col_num_count += 1
 
             num_row += 1
 
