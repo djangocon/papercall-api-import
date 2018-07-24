@@ -206,7 +206,7 @@ def create_yaml(api_key, yaml_dir):
                 post['sitemap'] = True
 
                 # TODO: Scheduling info...
-                post['date'] = '2016-07-18 09:00'
+                post['date'] = '2018-10-15 09:00'
                 post['room'] = ''
                 post['track'] = ''
 
