@@ -20,7 +20,7 @@ def get_api_key():
     """
     Get the user's API key
     """
-    print('Your DjangoCon PaperCall API Key can be found here: https://www.papercall.io/events/316/apidocs')
+    print('Your DjangoCon PaperCall API Key can be found here: https://www.papercall.io/events/2198/apidocs')
     api_key = input('Please enter your PaperCall event API Key: ')
     if len(api_key) != 32:
         raise ValueError('Error: API Key must be 32 characters long.')
