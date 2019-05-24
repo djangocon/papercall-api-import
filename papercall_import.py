@@ -216,13 +216,13 @@ def create_yaml(api_key, yaml_dir):
                 # todo: refactor template layout to support multiple authors
                 post['presenters'] = [
                     {
-                        'name': submission['profile']['name'],
-                        'bio': submission['profile']['bio'],
-                        'company': submission['profile']['company'],
+                        'name': submission['profile']['name'] if 'profile' in submission else 'No Profile',
+                        'bio': submission['profile']['bio'] if 'profile' in submission else 'No Profile',
+                        'company': submission['profile']['company'] if 'profile' in submission else 'No Profile',
                         'photo_url': '',
                         'github': '',
-                        'twitter': submission['profile']['twitter'],
-                        'website': submission['profile']['url'],
+                        'twitter': submission['profile']['twitter'] if 'profile' in submission else 'No Profile',
+                        'website': submission['profile']['url'] if 'profile' in submission else 'No Profile',
                     },
                 ]
 
