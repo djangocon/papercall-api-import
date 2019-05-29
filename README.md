@@ -10,9 +10,9 @@ This script calls the PaperCall.io API and pulls submissions into a format chose
 Use your favorite tool to create a `virtualenv`, then:
 
 ```shell
-git clone https://github.com/djangocon/papercall-api-import.git
-cd papercall-api-import
-pip install -r requirements.txt
+$ git clone https://github.com/djangocon/papercall-api-import.git
+$ cd papercall-api-import
+$ pip install -r requirements.txt
 ```
 
 # Running the Script
@@ -24,7 +24,7 @@ https://www.papercall.io/events/[event_id]/apidocs
 Then run the command:
 
 ```shell
-python papercall_import.py
+$ PAPERCALL_API_KEY="update-me-from-papercall" python papercall_import.py
 ```
 
 ...and follow the input prompts!
