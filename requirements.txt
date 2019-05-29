@@ -1,5 +1,5 @@
 envparse==0.2.0
-python-frontmatter==0.4.2
-python-slugify==1.2.4
+python-frontmatter==0.4.5
+python-slugify==3.0.2
 requests>=2.20
-xlwt==1.2.0
+xlwt==1.3.0
