@@ -205,6 +205,7 @@ def create_yaml(api_key, yaml_dir):
                 post["accepted"] = True if submission_state == "accepted" else False
                 post["published"] = True
                 post["sitemap"] = True
+                post["tags"] = submission["tags"]
 
                 # TODO: Scheduling info...
                 post["date"] = "2018-10-15 09:00"
