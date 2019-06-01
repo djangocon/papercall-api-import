@@ -85,6 +85,7 @@ def create_excel(api_key, xls_file):
             "Name",
             "Email",
             "Bio",
+            "Tags",
         ]
 
         # Write a header row
@@ -126,6 +127,8 @@ def create_excel(api_key, xls_file):
                 ws.write(num_row, 6, "Not Revealed")
                 ws.write(num_row, 7, "Not Revealed")
                 ws.write(num_row, 8, "Not Revealed")
+
+            ws.write(num_row, 9, ', '.join(submission["tags"] or []))
 
             col_num_count = col_num
 
