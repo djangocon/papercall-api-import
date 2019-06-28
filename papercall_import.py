@@ -244,7 +244,9 @@ def create_yaml(api_key, yaml_dir, start_date):
                 post["video_url"] = ""
                 post["slides_url"] = ""
 
-                filename = Path(f"{yaml_dir}/{submission_state}/{talk_format}/{start_date}-{talk_title_slug}.md")
+                filename = Path(
+                    f"{yaml_dir}/{submission_state}/{talk_format}/{start_date}-{talk_title_slug}.md"
+                )
 
                 if not filename.parent.exists():
                     filename.parent.mkdir()
