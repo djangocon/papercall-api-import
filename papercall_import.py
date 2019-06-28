@@ -1,10 +1,13 @@
+import click
 import frontmatter
 
 from envparse import env, ConfigurationError
 from os import makedirs
+from pathlib import Path
 from requests import get
 from slugify import slugify
 from xlwt import easyxf, Workbook
+
 
 # Possible submission states
 SUBMISSION_STATES = ("submitted", "accepted", "rejected", "waitlist")
@@ -19,7 +22,7 @@ def get_api_key():
     """
     Get the user's API key
     """
-    print(
+    click.echo(
         "Your DjangoCon PaperCall API Key can be found here: https://www.papercall.io/events/2198/apidocs"
     )
     api_key = input("Please enter your PaperCall event API Key: ")
@@ -33,9 +36,9 @@ def get_format():
     """
     Get the output format to write to.
     """
-    print("Which format would you like to output?")
-    print("1: Excel")
-    print("2: YAML/Markdown for Jekyll")
+    click.echo("Which format would you like to output?")
+    click.echo("1: Excel")
+    click.echo("2: YAML/Markdown for Jekyll")
     file_format = input("Please enter your your output format (1 or 2): ")
     if file_format not in ("1", "2"):
         raise ValueError('Error: Output format must be "1" or "2".')
@@ -61,7 +64,7 @@ def create_excel(api_key, xls_file):
     total_feedback = 0
 
     # Get the event ID number
-    r = get("https://www.papercall.io/api/v1/event?_token={0}".format(api_key))
+    r = get(f"https://www.papercall.io/api/v1/event?_token={api_key}")
 
     event_id = r.json()["cfp"]["id"]
 
@@ -99,13 +102,11 @@ def create_excel(api_key, xls_file):
             )
 
         r = get(
-            "https://www.papercall.io/api/v1/submissions?_token={0}&state={1}&per_page=1000".format(
-                api_key, submission_state
-            )
+            f"https://www.papercall.io/api/v1/submissions?_token={api_key}&state={submission_state}&per_page=1000"
         )
 
         for submission in r.json():
-            print(submission)
+            click.echo(submission)
             total_submissions += 1
 
             ws.write(
@@ -128,15 +129,13 @@ def create_excel(api_key, xls_file):
                 ws.write(num_row, 7, "Not Revealed")
                 ws.write(num_row, 8, "Not Revealed")
 
-            ws.write(num_row, 9, ', '.join(submission["tags"] or []))
+            ws.write(num_row, 9, ", ".join(submission["tags"] or []))
 
             col_num_count = col_num
 
             # Only include ratings comments if they've been entered
             c = get(
-                "https://www.papercall.io/api/v1/submissions/{}/ratings?_token={}".format(
-                    submission["id"], api_key
-                )
+                f"https://www.papercall.io/api/v1/submissions/{submission['id']}/ratings?_token={api_key}"
             )
             for ratings_comment in c.json():
                 total_ratings += 1
@@ -176,7 +175,7 @@ def create_excel(api_key, xls_file):
     return total_submissions, total_ratings, total_feedback
 
 
-def create_yaml(api_key, yaml_dir):
+def create_yaml(api_key, yaml_dir, start_date):
     for submission_state in SUBMISSION_STATES:
         # Create the directories, if they don't exist.
         makedirs("{}/{}".format(yaml_dir, submission_state), exist_ok=True)
@@ -188,12 +187,12 @@ def create_yaml(api_key, yaml_dir):
         )
 
         for submission in r.json():
-            print(submission)
+            click.echo(submission)
             talk_format = None
             if submission["talk"]["talk_format"][0:4].lower() == "talk":
-                talk_format = "talk"
+                talk_format = "talks"
             elif submission["talk"]["talk_format"][0:4].lower() == "tuto":
-                talk_format = "tutorial"
+                talk_format = "tutorials"
 
             if talk_format:
                 talk_title_slug = slugify(submission["talk"]["title"])
@@ -203,7 +202,7 @@ def create_yaml(api_key, yaml_dir):
                 post["category"] = talk_format
                 post["title"] = submission["talk"]["title"]
                 post["difficulty"] = submission["talk"]["audience_level"]
-                post["permalink"] = "/{}/{}/".format(talk_format, talk_title_slug)
+                post["permalink"] = f"/{talk_format}/{talk_title_slug}/"
                 post["layout"] = "session-details"
                 post["accepted"] = True if submission_state == "accepted" else False
                 post["published"] = True
@@ -211,7 +210,7 @@ def create_yaml(api_key, yaml_dir):
                 post["tags"] = submission["tags"]
 
                 # TODO: Scheduling info...
-                post["date"] = "2018-10-15 09:00"
+                post["date"] = f"{start_date} 22:00"
                 post["room"] = ""
                 post["track"] = ""
 
@@ -245,25 +244,30 @@ def create_yaml(api_key, yaml_dir):
                 post["video_url"] = ""
                 post["slides_url"] = ""
 
-                with open(
-                    "{}/{}/{}-{}.md".format(
-                        yaml_dir, submission_state, talk_format, talk_title_slug
-                    ),
-                    "wb",
-                ) as file_to_write:
+                filename = Path(f"{yaml_dir}/{submission_state}/{talk_format}/{start_date}-{talk_title_slug}.md")
+
+                if not filename.parent.exists():
+                    filename.parent.mkdir()
+
+                with filename.open("wb") as file_to_write:
                     frontmatter.dump(post, file_to_write)
 
-                print(frontmatter.dumps(post))
+                click.echo(frontmatter.dumps(post))
 
 
-def main():
+@click.command()
+@click.option("file_format", "--format", type=click.Choice(["xls", "yaml"]))
+@click.option("start_date", "--start-date", default="2018-10-15")
+def main(file_format, start_date):
     try:
         api_key = env("PAPERCALL_API_KEY")
     except ConfigurationError:
         api_key = get_api_key()
-    file_format = get_format()
 
-    if file_format == "1":
+    if not file_format:
+        file_format = get_format()
+
+    if file_format == "xls":
         xls_file = get_filename(
             "Filename to write [djangoconus.xls]: ", "djangoconus.xls"
         )
@@ -271,7 +275,7 @@ def main():
             api_key, xls_file
         )
 
-        print(
+        click.echo(
             """
     Total Submissions: {total_submissions}
     Total Ratings: {total_ratings}
@@ -282,9 +286,9 @@ def main():
                 total_feedback=total_feedback,
             )
         )
-    elif file_format == "2":
+    elif file_format == "yaml":
         yaml_dir = get_filename("Directory to write to [yaml]: ", "yaml")
-        create_yaml(api_key, yaml_dir)
+        create_yaml(api_key, yaml_dir, start_date)
 
 
 if __name__ == "__main__":
