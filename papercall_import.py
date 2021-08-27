@@ -212,7 +212,7 @@ def create_yaml(api_key, yaml_dir, start_date):
                 # TODO: Scheduling info...
                 post["date"] = f"{start_date} 10:00"
                 post["room"] = ""
-                post["track"] = ""
+                post["track"] = "t0"
 
                 # TODO: Determine if we still need summary (I don't think we do)
                 post["summary"] = ""
