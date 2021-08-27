@@ -189,7 +189,7 @@ def create_yaml(api_key, yaml_dir, start_date):
         for submission in r.json():
             click.echo(submission)
             talk_format = None
-            if submission["talk"]["talk_format"][0:4].lower() == "talk":
+            if submission["talk"]["talk_format"][0:4].lower() in {"talk", "espa"}:
                 talk_format = "talks"
             elif submission["talk"]["talk_format"][0:4].lower() == "tuto":
                 talk_format = "tutorials"
