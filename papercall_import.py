@@ -210,7 +210,7 @@ def create_yaml(api_key, yaml_dir, start_date):
                 post["tags"] = submission["tags"]
 
                 # TODO: Scheduling info...
-                post["date"] = f"{start_date} 22:00"
+                post["date"] = f"{start_date} 10:00"
                 post["room"] = ""
                 post["track"] = ""
 
@@ -259,7 +259,7 @@ def create_yaml(api_key, yaml_dir, start_date):
 
 @click.command()
 @click.option("file_format", "--format", type=click.Choice(["xls", "yaml"]))
-@click.option("start_date", "--start-date", default="2018-10-15")
+@click.option("start_date", "--start-date", default="2021-10-22")
 def main(file_format, start_date):
     try:
         api_key = env("PAPERCALL_API_KEY")
